@@ -1,0 +1,49 @@
+﻿@model LearningResourceSystem.LearningResourceModel;     
+
+@{
+    ViewData["Title"] = "Delete Resource";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">REMOVE RESOURCE</span>
+    <h1>Delete Learning Resource</h1>
+    <p>Review the resource before confirming deletion.</p>
+</section>
+
+<section class="form-panel delete-panel">
+    <div class="warning-icon">!</div>
+
+    <h2>Are you sure you want to delete this resource?</h2>
+
+    <div class="delete-resource-summary">
+        <span class="topic-tag">@Model.Topic</span>
+        <h3>@Model.Title</h3>
+        <p>@Model.Description</p>
+        <p class="muted">By @Model.AuthorName</p>
+    </div>
+
+    <p class="warning-text">
+        This action cannot be undone.
+    </p>
+
+    <form asp-controller="Resources"
+          asp-action="Delete"
+          asp-route-id="@Model.ResourceId"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions">
+            <button type="submit" class="button button-danger">
+                Confirm Delete
+            </button>
+
+            <a asp-controller="Resources"
+               asp-action="Details"
+               asp-route-id="@Model.ResourceId"
+               class="button button-outline">
+                Cancel
+            </a>
+        </div>
+    </form>
+</section>

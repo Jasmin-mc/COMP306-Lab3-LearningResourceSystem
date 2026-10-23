@@ -1,0 +1,100 @@
+﻿@model IEnumerable<LearningResourceSystem.Comments>
+
+    @{
+    ViewData["Title"] = "Resource Comments";
+    string entityId = (string)(ViewBag.entityId ?? "E001");
+    }
+
+    <section class="page-heading">
+        <span class="eyebrow">COMMUNITY DISCUSSION</span>
+        <h1>Resource Comments</h1>
+        <p>Read feedback and share your thoughts about this resource.</p>
+    </section>
+
+    <section class="form-panel">
+        <h2>Add a comment</h2>
+
+        @if (TempData["CommentError"] != null)
+        {
+        <p class="validation-message">
+            @TempData["CommentError"]
+        </p>
+        }
+
+        <form asp-controller="Comments"
+              asp-action="Add"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="entityId"
+                   value="@entityId" />
+
+            <div class="form-group">
+                <label for="commentText">Your comment</label>
+                <textarea id="commentText"
+                          name="commentText"
+                          class="form-control"
+                          rows="4"
+                          required
+                          maxlength="2000"
+                          placeholder="Share a helpful comment..."></textarea>
+            </div>
+
+            <button type="submit" class="button">
+                Post Comment
+            </button>
+        </form>
+
+        <p class="field-help">
+            Comments are currently temporary sample data. Login and
+            comment ownership checks have not been implemented.
+        </p>
+    </section>
+
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <h2>Discussion</h2>
+                <p>@Model.Count() comment(s)</p>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+        <div class="empty-state">
+            <h3>No comments yet</h3>
+            <p>Be the first to share your thoughts.</p>
+        </div>
+        }
+        else
+        {
+        <div class="comment-list">
+            @foreach (var comment in Model)
+            {
+            <article class="comment-card">
+                <div class="comment-header">
+                    <strong>@comment.username</strong>
+                     
+                </div>
+
+                <p>@comment.content</p>
+
+                @* TODO: Add Edit only for the comment's author
+                and only within the allowed 24-hour window.
+                Enforce both rules on the server as well. *@
+            </article>
+            }
+        </div>
+        }
+    </section>
+
+    <div class="section">
+        <a asp-controller="Resources"
+           asp-action="Details"
+           asp-route-id="@entityId"
+           class="button button-outline">
+            Back to Resource
+        </a>
+    </div>

@@ -1,8 +1,91 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">STUDENT LEARNING STARTS HERE</span>
+
+        <h1>Discover resources.<br />Grow your knowledge.</h1>
+
+        <p>
+            Find educational resources, explore new topics, and share
+            useful learning materials with your community.
+        </p>
+
+        <div class="hero-actions">
+            <a asp-controller="Resources"
+               asp-action="Index"
+               class="button">
+                Browse Resources
+            </a>
+
+            <a asp-controller="Resources"
+               asp-action="Create"
+               class="button button-outline">
+                Share a Resource
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">EXPLORE</span>
+            <h2>What are you interested in?</h2>
+            <p>Start with a topic and find something new to learn.</p>
+        </div>
+    </div>
+
+    <div class="category-grid">
+        <a asp-controller="Resources"
+           asp-action="Index"
+           asp-route-searchTerm="Programming"
+           class="category-card">
+            <span class="category-icon">01</span>
+            <h3>Programming</h3>
+            <p>Explore coding concepts and languages.</p>
+        </a>
+
+        <a asp-controller="Resources"
+           asp-action="Index"
+           asp-route-searchTerm="Databases"
+           class="category-card">
+            <span class="category-icon">02</span>
+            <h3>Databases</h3>
+            <p>Learn about data, SQL, and storage.</p>
+        </a>
+
+        <a asp-controller="Resources"
+           asp-action="Index"
+           asp-route-searchTerm="Web Development"
+           class="category-card">
+            <span class="category-icon">03</span>
+            <h3>Web Development</h3>
+            <p>Discover the tools behind websites.</p>
+        </a>
+
+        <a asp-controller="Resources"
+           asp-action="Index"
+           asp-route-searchTerm="Cloud Computing"
+           class="category-card">
+            <span class="category-icon">04</span>
+            <h3>Cloud Computing</h3>
+            <p>Explore cloud services and technologies.</p>
+        </a>
+    </div>
+</section>
+
+<section class="callout">
+    <div>
+        <h2>Have something useful to share?</h2>
+        <p>Add a learning resource to help others discover it.</p>
+    </div>
+
+    <a asp-controller="Resources"
+       asp-action="Create"
+       class="button button-light">
+        Add a Resource
+    </a>
+</section>

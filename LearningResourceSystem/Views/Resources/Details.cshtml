@@ -1,0 +1,62 @@
+﻿@model LearningResourceSystem.LearningResourceModel;
+
+@{
+    ViewData["Title"] = "Resource Details";
+}
+
+<div class="breadcrumb">
+    <a asp-controller="Resources" asp-action="Index">
+        Browse Resources
+    </a>
+    <span>/</span>
+    <span>Details</span>
+</div>
+
+<article class="details-panel">
+    <div class="resource-card-top">
+        <span class="topic-tag">@Model.Topic</span>
+    </div>
+
+    <h1>@Model.Title</h1>
+
+    <div class="resource-meta details-meta">
+        <span>Author: @Model.AuthorName</span>
+        <span>Added: @Model.CreatedDate.ToString("MMMM dd, yyyy")</span>
+    </div>
+
+    <div class="details-description">
+        <h2>About this resource</h2>
+        <p>@Model.Description</p>
+    </div>
+
+    
+    @* TODO: Replace this with a real S3 download/access link. *@
+    }
+    else
+    {
+    <p class="muted">No file has been attached to this sample resource.</p>
+    }
+
+    <div class="details-actions">
+        <a asp-controller="Resources"
+           asp-action="Edit"
+           asp-route-id="@Model.ResourceId"
+           class="button">
+            Edit Resource
+        </a>
+
+        <a asp-controller="Resources"
+           asp-action="Delete"
+           asp-route-id="@Model.ResourceId"
+           class="button button-danger">
+            Delete Resource
+        </a>
+
+        <a asp-controller="Comments"
+           asp-action="Index"
+           asp-route-resourceId="@Model.ResourceId"
+           class="button button-outline">
+            View Comments
+        </a>
+    </div>
+</article>

@@ -1,0 +1,62 @@
+﻿@model LearningResourceSystem.LearningResourceModel;
+
+@{
+    ViewData["Title"] = "Edit Resource";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">UPDATE</span>
+    <h1>Edit Learning Resources</h1>
+    <p>Update the Information for this resource</p>
+</section>
+
+<section class="form-panel">
+    <form asp-controller="Resources"
+          asp-action="Edit"
+          asp-route-id="@Model.ResourceId"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="ResourceId" />
+
+        <div asp-validation-summary="ModelOnly"
+             class="validation-summary"></div>
+
+        <div class="form-group">
+            <label asp-for="Title">Resource Title</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Topic">Topic or Category</label>
+            <input asp-for="Topic" class="form-control" />
+            <span asp-validation-for="Topic"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description">Description</label>
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="6"></textarea>
+            <span asp-validation-for="Description"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button">
+                Save Changes
+            </button>
+
+            <a asp-controller="Resources"
+               asp-action="Details"
+               asp-route-id="@Model.ResourceId"
+               class="button button-outline">
+                Cancel
+            </a>
+        </div>
+    </form>
+</section>

@@ -1,0 +1,122 @@
+﻿@model IEnumerable<LearningResourceSystem.LearningResourceModel>
+
+   @{
+    ViewData["Title"] = "Browse Resources";
+    }
+
+    <section class="page-heading">
+        <span class="eyebrow">RESOURCE LIBRARY</span>
+        <h1>Browse Learning Resources</h1>
+        <p>Search for learning materials and discover something useful.</p>
+    </section>
+
+    <section class="panel">
+        <form asp-controller="Resources"
+              asp-action="Index"
+              method="get"
+              class="search-form">
+
+            <div class="form-group">
+                <label for="searchTerm">Title or topic</label>
+                <input id="searchTerm"
+                       name="searchTerm"
+                       value="@ViewBag.SearchTerm"
+                       placeholder="e.g. C#, databases..." />
+            </div>
+
+            <div class="form-group">
+                <label for="author">Author or instructor</label>
+                <input id="author"
+                       name="author"
+                       value="@ViewBag.Author"
+                       placeholder="Search by author" />
+            </div>
+
+            <div class="form-group">
+                <label for="sortBy">Sort by</label>
+                <select id="sortBy" name="sortBy">
+                    <option value="newest"
+                            selected="@(ViewBag.SortBy != " popular")">
+                        Newest first
+                    </option>
+                    <option value="popular"
+                            selected="@(ViewBag.SortBy == " popular")">
+                        Most popular
+                    </option>
+                </select>
+            </div>
+
+            <div class="search-actions">
+                <button type="submit" class="button">Search</button>
+
+                <a asp-controller="Resources"
+                   asp-action="Index"
+                   class="button button-outline">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <div class="section-heading resource-heading">
+        <div>
+            <h2>Available Resources</h2>
+            <p>@Model.Count() resource(s) found.</p>
+        </div>
+
+        <a asp-controller="Resources"
+           asp-action="Create"
+           class="button">
+            + Add Resource
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+    <div class="empty-state">
+        <h3>No resources found</h3>
+        <p>Try another search term or clear the filters.</p>
+    </div>
+    }
+    else
+    {
+    <div class="resource-grid">
+        @foreach (var resource in Model)
+        {
+        <article class="resource-card">
+            <div class="resource-card-top">
+                <span class="topic-tag">@resource.Topic</span>
+            </div>
+
+            <h3>@resource.Title</h3>
+
+            <p class="resource-description">
+                @resource.Description
+            </p>
+
+            <div class="resource-meta">
+                <span>By @resource.AuthorName</span>
+                <span>
+                    @resource.CreatedDate.ToString("MMM dd, yyyy")
+                </span>
+            </div>
+
+            <div class="card-actions">
+                <a asp-controller="Resources"
+                   asp-action="Details"
+                   asp-route-id="@resource.ResourceId"
+                   class="button button-small">
+                    View Details
+                </a>
+
+                <a asp-controller="Resources"
+                   asp-action="Edit"
+                   asp-route-id="@resource.ResourceId"
+                   class="text-link">
+                    Edit
+                </a>
+            </div>
+        </article>
+        }
+    </div>
+    }

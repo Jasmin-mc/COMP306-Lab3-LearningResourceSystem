@@ -1,0 +1,32 @@
+﻿@model IEnumerable<string>
+
+    @{
+    ViewData["Title"] = "Categories";
+    }
+
+    <section class="page-heading">
+        <span class="eyebrow">EXPLORE BY TOPIC</span>
+        <h1>Resource Categories</h1>
+        <p>Choose a topic to find related learning resources.</p>
+    </section>
+
+    <div class="category-grid">
+        @foreach (var category in Model)
+        {
+        <a asp-controller="Resources"
+           asp-action="Index"
+           asp-route-searchTerm="@category"
+           class="category-card">
+
+            <span class="category-icon">↗</span>
+            <h3>@category</h3>
+            <p>Browse resources related to @category.</p>
+            <span class="text-link">Explore resources →</span>
+        </a>
+        }
+    </div>
+
+    <p class="field-help">
+        These categories are temporary examples. They will be loaded
+        from the database after backend integration.
+    </p>

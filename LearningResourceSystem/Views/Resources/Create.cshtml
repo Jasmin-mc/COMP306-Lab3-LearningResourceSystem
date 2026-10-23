@@ -1,0 +1,74 @@
+﻿@model LearningResourceSystem.LearningResourceModel;          
+
+@{
+    ViewData["Title"] = "Add Resource";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">CONTRIBUTE</span>
+    <h1>Add a Learning Resource</h1>
+    <p>Share a useful resource with other learners.</p>
+</section>
+
+<section class="form-panel">
+    <form asp-controller="Resources"
+          asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="validation-summary"></div>
+
+        <div class="form-group">
+            <label asp-for="Title">Resource Title</label>
+            <input asp-for="Title"
+                   class="form-control"
+                   placeholder="Enter a clear title" />
+            <span asp-validation-for="Title"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Topic">Topic or Category</label>
+            <input asp-for="Topic"
+                   class="form-control"
+                   placeholder="e.g. Programming" />
+            <span asp-validation-for="Topic"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description">Description</label>
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="6"
+                      placeholder="Describe what learners will find..."></textarea>
+            <span asp-validation-for="Description"
+                  class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="UploadedFile">Attach a file (optional)</label>
+            <input id="UploadedFile"
+                   name="UploadedFile"
+                   type="file"
+                   class="form-control" />
+            <p class="field-help">
+                File storage will be connected to Amazon S3 later.
+            </p>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button">
+                Create Resource
+            </button>
+
+            <a asp-controller="Resources"
+               asp-action="Index"
+               class="button button-outline">
+                Cancel
+            </a>
+        </div>
+    </form>
+</section>

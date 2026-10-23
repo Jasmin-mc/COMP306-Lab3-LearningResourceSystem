@@ -1,0 +1,58 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<section class="auth-container">
+    <div class="auth-panel">
+        <div class="auth-logo">LR</div>
+
+        <h1>Welcome back</h1>
+        <p class="auth-subtitle">
+            Sign-in functionality will be connected to the backend later.
+        </p>
+
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All"
+                 class="validation-summary"></div>
+
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input id="email"
+                       name="email"
+                       type="email"
+                       class="form-control"
+                       autocomplete="username"
+                       required
+                       placeholder="you@example.com" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password"
+                       name="password"
+                       type="password"
+                       class="form-control"
+                       autocomplete="current-password"
+                       required
+                       placeholder="Enter your password" />
+            </div>
+
+            <button type="submit" class="button button-full">
+                Login
+            </button>
+        </form>
+
+        <p class="auth-switch">
+            Don't have an account?
+            <a asp-controller="Account" asp-action="Register">
+                Register here
+            </a>
+        </p>
+
+    </div>
+</section>
