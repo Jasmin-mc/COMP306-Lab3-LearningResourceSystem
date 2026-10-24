@@ -1,59 +1,134 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LearningResourceSystem
 {
     public class AccountController : Controller
     {
-        [HttpGet]
-        public IActionResult Login()
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+
+        public AccountController(
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager)
         {
-            return View();
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Login(string email, string password)
-        {
-            //PLACEHOLDER ONLY
-            // MUST UPDATE WITH SAMREETS AUTHENTICATION INFO
-
-            ModelState.AddModelError(
-                string.Empty,
-                "Login is not connected yet, check again soon");
-
-            return View();
-        }
-
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register (
-            string username,
-            string email,
-            string password,
-            string confirmPassword)
+        public async Task<IActionResult> Register(
+            [Required] string username,
+            [Required, EmailAddress] string email,
+            [Required, MinLength(8)] string password,
+            [Required] string confirmPassword)
         {
             if (password != confirmPassword)
             {
                 ModelState.AddModelError(
                     string.Empty,
                     "The passwords do not match.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            var user = new IdentityUser
+            {
+                UserName = username.Trim(),
+                Email = email.Trim()
+            };
+
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        error.Description);
+                }
 
                 return View();
             }
-            //PLACEHOLDER ONNLLYYYY 
-            //Reminder not to save passwords here or create accounts?
+
+            TempData["SuccessMessage"] =
+                "Your account was created. Please log in.";
+
+            return RedirectToAction(nameof(Login));
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(
+            [Required, EmailAddress] string email,
+            [Required] string password)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(email.Trim());
+
+            if (user != null)
+            {
+                var result = await _signInManager.PasswordSignInAsync(
+                    user,
+                    password,
+                    isPersistent: false,
+                    lockoutOnFailure: true);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
 
             ModelState.AddModelError(
                 string.Empty,
-                "Registration is not connected yet. WILL BE UPDATED SOON");
+                "Invalid login attempt.");
 
             return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return Content("You do not have permission to access this page.");
         }
     }
 }

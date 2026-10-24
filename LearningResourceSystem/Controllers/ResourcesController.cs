@@ -1,121 +1,120 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using LearningResourceSystem.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearningResourceSystem
 {
     public class ResourcesController : Controller
     {
-        // TEMPORARY SAMPLE DATA.
-        // Replace this list with Samreet's database/service integration.
-        private static readonly List<LearningResourceModel> Resources = new()
-        {
-            new LearningResourceModel
-            {
-                ResourceId = 1,
-                Title = "Introduction to C#",
-                Topic = "Programming",
-                Description = "An introduction to C# programming concepts.",
-                AuthorName = "Sample Instructor",
-                CreatedDate = DateTime.Today.AddDays(-2),
-                
-            },
-            new LearningResourceModel
-            {
-                ResourceId = 2,
-                Title = "Understanding SQL",
-                Topic = "Databases",
-                Description = "Learn the basics of relational databases and SQL.",
-                AuthorName = "Sample Instructor",
-                CreatedDate = DateTime.Today.AddDays(-1),
-                
-            },
-            new LearningResourceModel
-            {
-                ResourceId = 3,
-                Title = "ASP.NET Core MVC Basics",
-                Topic = "Web Development",
-                Description = "Learn how MVC controllers, views, and models work.",
-                AuthorName = "Sample Instructor",
-                CreatedDate = DateTime.Today,
-                
-            }
-        };
+        private readonly ResourcesDbContext _context;
 
-        public IActionResult Index(
+        public ResourcesController(ResourcesDbContext context)
+        {
+            _context = context;
+        }
+
+        // public browsing
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Index(
             string? searchTerm,
             string? author)
         {
-            IEnumerable<LearningResourceModel> results = Resources;
+            var query = _context.LearningResources
+                .AsNoTracking()
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                results = results.Where(r =>
-                    r.Title.Contains(searchTerm,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    r.Topic.Contains(searchTerm,
-                        StringComparison.OrdinalIgnoreCase));
+                var term = searchTerm.Trim();
+
+                query = query.Where(r =>
+                    r.Title.Contains(term) ||
+                    r.Topic.Contains(term));
             }
 
             if (!string.IsNullOrWhiteSpace(author))
             {
-                results = results.Where(r =>
-                    r.AuthorName.Contains(author,
-                        StringComparison.OrdinalIgnoreCase));
-            }
+                var authorTerm = author.Trim();
 
-            
+                query = query.Where(r =>
+                    r.AuthorName.Contains(authorTerm));
+            }
 
             ViewBag.SearchTerm = searchTerm;
             ViewBag.Author = author;
-           
 
-            return View(results.ToList());
+            var resources = await query
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
+
+            return View(resources);
         }
 
-        public IActionResult Details(int id)
+        // public display 
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            var resource = Resources.FirstOrDefault(r =>
-                r.ResourceId == id);
+            var resource = await _context.LearningResources
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (resource == null)
             {
                 return NotFound();
-            }        
+            }
 
             return View(resource);
         }
 
+        // display creation form.
+        [Authorize]
         [HttpGet]
         public IActionResult Create()
         {
             return View(new LearningResourceModel());
         }
 
+        // save a new resource to AWS.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(LearningResourceModel resource)
+        public async Task<IActionResult> Create(
+            [Bind("Title,Topic,Description")]
+            LearningResourceModel submitted)
         {
-            if (!ModelState.IsValid)
+            submitted.ResourceId = 0;
+            submitted.AuthorName = User.Identity?.Name ?? "Unknown";
+            submitted.CreatedDate = DateTime.UtcNow;
+
+            ModelState.Clear();
+
+            if (!TryValidateModel(submitted))
             {
-                return View(resource);
+                return View(submitted);
             }
 
-            // TEMPORARY: no permanent file upload or database storage.
-            resource.ResourceId = Resources.Count == 0
-                ? 1
-                : Resources.Max(r => r.ResourceId) + 1;
-            resource.CreatedDate = DateTime.Today;
-            resource.AuthorName = "Demo User";
+            _context.LearningResources.Add(submitted);
+            await _context.SaveChangesAsync();
 
-            Resources.Add(resource);
-
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Details),
+                new { id = submitted.ResourceId });
         }
 
+        //  display the editing form.
+        [Authorize]
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var resource = Resources.FirstOrDefault(r =>
-                r.ResourceId == id);
+            var resource = await _context.LearningResources
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (resource == null)
             {
@@ -125,40 +124,46 @@ namespace LearningResourceSystem
             return View(resource);
         }
 
+        //save permitted field changes.
+        [Authorize]
         [HttpPost]
+        [ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, LearningResourceModel updated)
+        public async Task<IActionResult> EditPost(int id)
         {
-            if (id != updated.ResourceId)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(updated);
-            }
-
-            var existing = Resources.FirstOrDefault(r =>
-                r.ResourceId == id);
+            var existing = await _context.LearningResources
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (existing == null)
             {
                 return NotFound();
             }
 
-            existing.Title = updated.Title;
-            existing.Topic = updated.Topic;
-            existing.Description = updated.Description;
+            var updated = await TryUpdateModelAsync(
+                existing,
+                prefix: "",
+                r => r.Title,
+                r => r.Topic,
+                r => r.Description);
+
+            if (!updated)
+            {
+                return View(existing);
+            }
+
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // display deletion confirmation.
+        [Authorize]
         [HttpGet]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var resource = Resources.FirstOrDefault(r =>
-                r.ResourceId == id);
+            var resource = await _context.LearningResources
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (resource == null)
             {
@@ -168,19 +173,22 @@ namespace LearningResourceSystem
             return View(resource);
         }
 
+        // delete the resource from AWS.
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var resource = Resources.FirstOrDefault(r =>
-                r.ResourceId == id);
+            var resource = await _context.LearningResources
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (resource == null)
             {
                 return NotFound();
             }
 
-            Resources.Remove(resource);
+            _context.LearningResources.Remove(resource);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

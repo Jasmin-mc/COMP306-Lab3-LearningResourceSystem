@@ -25,6 +25,9 @@ var sqlBuilder = new SqlConnectionStringBuilder(connectionString)
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddDbContext<ResourcesDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 // Account management and cookie authentication.
 builder.Services
     .AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -42,7 +45,7 @@ builder.Services
 
         options.Lockout.MaxFailedAccessAttempts = 5;
 
-        // Local learning setup: email confirmation is not implemented yet.
+        
         options.SignIn.RequireConfirmedEmail = false;
         options.SignIn.RequireConfirmedAccount = false;
     })
